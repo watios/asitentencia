@@ -12,7 +12,8 @@
 <body>
   <div class="app-header">
     <button id="btnBackToMenu" class="btn-back-nav" aria-label="Volver al menú" style="visibility: hidden;">⬅️</button>
-    <h1 id="appTitle">📋 Asistencia Diaria</h1>
+    <h1 id="appTitle">📋 Asistencia Alcaldia de Villalba</h1>
+   
   </div>
 
   <div id="main-menu" class="menu-grid active">
@@ -40,6 +41,16 @@
       <div class="menu-icon">📈</div>
       <div class="menu-label">Estadísticas</div>
       <div class="menu-desc">Métricas generales del mes</div>
+    </div>
+    <div class="menu-item" data-target="sec-backups">
+      <div class="menu-icon">📂</div>
+      <div class="menu-label">Respaldos</div>
+      <div class="menu-desc">Exportar asistencias y personal</div>
+    </div>
+    <div class="menu-item" data-target="sec-restore">
+      <div class="menu-icon">📥</div>
+      <div class="menu-label">Cargar Respaldo</div>
+      <div class="menu-desc">Restaurar datos desde un JSON</div>
     </div>
     <div class="menu-item setup-pwa-btn" id="menuInstallBtn">
       <div class="menu-icon">📲</div>
@@ -83,6 +94,11 @@
         <label class="chk-label"><input type="checkbox" id="workDay-0" value="0"> Dom</label>
       </div>
       <button id="saveSettingsBtn" class="btn primary" style="margin-top: 10px;">💾 Guardar Configuración Semanal</button>
+
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+      <h3>🚨 Zona de Peligro</h3>
+      <p class="section-desc">Borra permanentemente todas las personas, historiales de asistencia y configuraciones guardadas en el dispositivo:</p>
+      <button id="resetAllDataBtn" class="btn primary" style="background-color: #d32f2f; margin-top: 5px;">🗑️ Resetear Todos los Datos</button>
     </div>
   </div>
 
@@ -143,6 +159,42 @@
           <div id="statsTopAbsences"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="sec-backups" class="section-content">
+    <div class="card">
+      <h3>📅 1. Copia de Seguridad de Asistencias Mensuales</h3>
+      <p class="section-desc">Descarga los registros de control de un mes concreto:</p>
+      <input type="month" id="backupMonthPicker">
+      <button id="btnBackupMonth" class="btn primary" style="background-color: #E65100;">💾 Guardar Asistencia Mensual</button>
+    </div>
+
+    <div class="card">
+      <h3>👥 2. Copia de Personal Registrado</h3>
+      <p class="section-desc">Descarga la lista de todas las personas ingresadas en el sistema (Cédulas, nombres y sexos):</p>
+      <button id="btnBackupPersons" class="btn success" style="background-color: #2E7D32;">💾 Descargar Lista de Personal</button>
+    </div>
+
+    <div class="card">
+      <h3>📦 3. Copia Completa de la Base de Datos</h3>
+      <p class="section-desc">Descarga un archivo global con todo el personal, configuraciones e historial de asistencia acumulado:</p>
+      <button id="btnBackupAll" class="btn primary" style="background-color: #311B92;">💾 Descargar Respaldo Total</button>
+    </div>
+  </div>
+
+  <div id="sec-restore" class="section-content">
+    <div class="card">
+      <h3>📥 Seleccionar Archivo de Respaldo (.json)</h3>
+      <p class="section-desc">Sube cualquier archivo JSON generado por esta app para incorporar las personas o el historial acumulado de asistencias de vuelta a tu base de datos local:</p>
+      
+      <div class="file-upload-wrapper">
+        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+        <button id="btnTriggerFileInput" class="btn secondary" style="background-color: #ECEFF1; border: 2px dashed #B0BEC5; color: #37474F; margin-bottom: 15px;">🔍 Buscar Archivo en mi Dispositivo</button>
+        <div id="selectedFileInfo" style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px; font-weight: bold;">Ningún archivo seleccionado</div>
+      </div>
+      
+      <button id="btnProcessImport" class="btn success" style="background-color: #00897B; display: none;">⚡ Procesar e Importar Datos</button>
     </div>
   </div>
 

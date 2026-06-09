@@ -9,44 +9,54 @@ db.version(3).stores({
 let deferredPrompt = null; 
 let searchFilterQuery = ''; 
 let workingDays = [1, 2, 3, 4, 5]; // Lunes a Viernes por defecto
+let loadedBackupData = null; // Variable temporal para guardar el JSON parseado
+
+// ========== FUNCIÓN AUXILIAR: FECHA ACTUAL (AAAA-MM-DD) ==========
+function getFormattedCurrentDate() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// ========== FUNCIÓN AUXILIAR: OBTENER NOMBRE DEL MES EN ESPAÑOL ==========
+function getMonthNameInSpanish(monthNumber) {
+  const meses = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  return meses[monthNumber - 1] || "Mes";
+}
 
 // ========== CAPTURA DEL EVENTO DE INSTALACIÓN PWA ==========
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
-  deferredPrompt = e; // Guardamos el evento si el dispositivo soporta instalación automática
+  deferredPrompt = e;
 });
 
 // ========== MANEJO DEL ENRUTADOR / NAVEGACIÓN NATIIVA ==========
 document.querySelectorAll('.menu-item').forEach(item => {
   item.addEventListener('click', () => {
     const targetSectionId = item.dataset.target;
-    if (!targetSectionId) return; // Si es el botón de instalación, no navega directamente
+    if (!targetSectionId) return;
 
     const label = item.querySelector('.menu-label').innerText;
     
-    // Ocultar menú y mostrar sección destino
     document.getElementById('main-menu').classList.remove('active');
     document.getElementById(targetSectionId).classList.add('active');
     
-    // Cambiar header: Hacer visible el botón de retorno y actualizar título
     document.getElementById('btnBackToMenu').style.visibility = 'visible';
     document.getElementById('appTitle').innerText = label;
 
-    // Disparar cargas automáticas según la sección abierta
     if (targetSectionId === 'sec-persons') loadPersons();
     if (targetSectionId === 'sec-attendance') loadAttendanceForToday();
   });
 });
 
-// EVENTO DEL BOTÓN DE RETORNO MEJORADO
 document.getElementById('btnBackToMenu').addEventListener('click', () => {
-  // Ocultar todas las secciones activas
   document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
-  
-  // Reestablecer menú de cuadrícula principal
   document.getElementById('main-menu').classList.add('active');
-  
-  // Ocultar estéticamente el botón de retorno y restaurar título principal
   document.getElementById('btnBackToMenu').style.visibility = 'hidden';
   document.getElementById('appTitle').innerText = '📋 Asistencia Diaria';
 });
@@ -54,7 +64,6 @@ document.getElementById('btnBackToMenu').addEventListener('click', () => {
 // ========== LÓGICA DE INSTALACIÓN / AYUDA ACCESO DIRECTO ==========
 document.getElementById('menuInstallBtn').addEventListener('click', async () => {
   if (deferredPrompt) {
-    // Si el navegador permite el prompt automático de instalación
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
@@ -62,13 +71,184 @@ document.getElementById('menuInstallBtn').addEventListener('click', async () => 
     }
     deferredPrompt = null;
   } else {
-    // Si ya está instalada o el dispositivo requiere añadirla manualmente (como la mayoría de Android/iOS)
     document.getElementById('pwaHelpModal').classList.add('open');
   }
 });
 
 document.getElementById('closePwaHelpBtn').addEventListener('click', () => {
   document.getElementById('pwaHelpModal').classList.remove('open');
+});
+
+// ========== RESPALDOS (JSON EXPORT CON NOMENCLATURA CONFIGURADA) ==========
+function triggerFileDownload(jsonData, defaultFileName) {
+  const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = defaultFileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
+// 1. Respaldo por Mes y Año Seleccionado
+document.getElementById('btnBackupMonth').addEventListener('click', async () => {
+  const monthValue = document.getElementById('backupMonthPicker').value; // Ejemplo: "2026-06"
+  if (!monthValue) { showStatus('⚠️ Selecciona un mes y año para respaldar', 2500); return; }
+
+  const [year, month] = monthValue.split('-').map(Number);
+  const totalDias = new Date(year, month, 0).getDate();
+  const monthPad = String(month).padStart(2, '0');
+
+  const records = await db.attendance
+    .where('date')
+    .between(`${year}-${monthPad}-01`, `${year}-${monthPad}-${String(totalDias).padStart(2, '0')}`, true, true)
+    .toArray();
+
+  if (records.length === 0) {
+    showStatus('📭 No hay registros de asistencia en el periodo elegido', 2500);
+    return;
+  }
+
+  const backupData = {
+    tipoRespaldo: "asistencia_mensual",
+    periodo: monthValue,
+    fechaExportacion: new Date().toISOString(),
+    datos: records
+  };
+
+  const nombreMesStr = getMonthNameInSpanish(month);
+  const fileName = `RespaldoAsistencia-${nombreMesStr}-${getFormattedCurrentDate()}.json`;
+  triggerFileDownload(backupData, fileName);
+  showStatus('📥 Respaldo mensual generado', 2000);
+});
+
+// 2. Respaldo exclusivo de Personal
+document.getElementById('btnBackupPersons').addEventListener('click', async () => {
+  const persons = await db.persons.toArray();
+  if (persons.length === 0) { showStatus('⚠️ La lista de personal está vacía', 2500); return; }
+
+  const backupData = {
+    tipoRespaldo: "personal_completo",
+    fechaExportacion: new Date().toISOString(),
+    datos: persons
+  };
+
+  const fileName = `RespaldoAsistencia-Personal-${getFormattedCurrentDate()}.json`;
+  triggerFileDownload(backupData, fileName);
+  showStatus('📥 Lista de personas descargada', 2000);
+});
+
+// 3. Respaldo General (Toda la BD)
+document.getElementById('btnBackupAll').addEventListener('click', async () => {
+  const persons = await db.persons.toArray();
+  const attendance = await db.attendance.toArray();
+  const settings = await db.settings.toArray();
+
+  const backupData = {
+    tipoRespaldo: "base_datos_completa",
+    fechaExportacion: new Date().toISOString(),
+    tablas: {
+      persons: persons,
+      attendance: attendance,
+      settings: settings
+    }
+  };
+
+  const fileName = `RespaldoAsistencia-Total-${getFormattedCurrentDate()}.json`;
+  triggerFileDownload(backupData, fileName);
+  showStatus('📦 Respaldo total descargado con éxito', 2500);
+});
+
+// ========== MÓDULO: CARGAR / IMPORTAR RESPALDOS ==========
+document.getElementById('btnTriggerFileInput').addEventListener('click', () => {
+  document.getElementById('importFileInput').click();
+});
+
+document.getElementById('importFileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  document.getElementById('selectedFileInfo').innerText = `📄 ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+  
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      loadedBackupData = JSON.parse(evt.target.result);
+      if (loadedBackupData.tipoRespaldo || loadedBackupData.tablas) {
+        document.getElementById('btnProcessImport').style.display = 'block';
+        showStatus('✅ Archivo analizado correctamente. Listo para importar.', 2000);
+      } else {
+        throw new Error("Formato no válido");
+      }
+    } catch(err) {
+      loadedBackupData = null;
+      document.getElementById('btnProcessImport').style.display = 'none';
+      document.getElementById('selectedFileInfo').innerText = '❌ Error: El archivo no tiene el formato de respaldo de la app';
+      showStatus('❌ Archivo incompatible', 3000);
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('btnProcessImport').addEventListener('click', async () => {
+  if (!loadedBackupData) return;
+
+  try {
+    if (loadedBackupData.tipoRespaldo === "base_datos_completa" || loadedBackupData.tablas) {
+      if (confirm('Esta acción combinará y actualizará el sistema con todos los datos guardados. ¿Continuar?')) {
+        for (let p of loadedBackupData.tablas.persons) {
+          let existe = await db.persons.where('cedula').equals(p.cedula).first();
+          if (!existe) {
+            await db.persons.add({ cedula: p.cedula, nombre: p.nombre, sexo: p.sexo || 'M' });
+          }
+        }
+        for (let a of loadedBackupData.tablas.attendance) {
+          let existeAsist = await db.attendance.where({ personId: a.personId, date: a.date }).first();
+          if (!existeAsist) {
+            await db.attendance.add({ personId: a.personId, date: a.date, estado: a.estado, hora: a.hora || '--:--:--' });
+          }
+        }
+        for (let s of loadedBackupData.tablas.settings) {
+          await db.settings.put(s);
+        }
+        await loadSettings();
+        showStatus('📦 Base de datos completa restaurada e integrada con éxito', 3500);
+      }
+    }
+    else if (loadedBackupData.tipoRespaldo === "personal_completo" && loadedBackupData.datos) {
+      let count = 0;
+      for (let p of loadedBackupData.datos) {
+        let existe = await db.persons.where('cedula').equals(p.cedula).first();
+        if (!existe) {
+          await db.persons.add({ cedula: p.cedula, nombre: p.nombre, sexo: p.sexo || 'M' });
+          count++;
+        }
+      }
+      showStatus(`👥 Personal importado: ${count} nuevas personas agregadas`, 3000);
+    }
+    else if (loadedBackupData.tipoRespaldo === "asistencia_mensual" && loadedBackupData.datos) {
+      let count = 0;
+      for (let a of loadedBackupData.datos) {
+        let existeAsist = await db.attendance.where({ personId: a.personId, date: a.date }).first();
+        if (!existeAsist) {
+          await db.attendance.add({ personId: a.personId, date: a.date, estado: a.estado, hora: a.hora || '--:--:--' });
+          count++;
+        }
+      }
+      showStatus(`📅 Historial cargado: ${count} registros añadidos con éxito`, 3000);
+    }
+
+    document.getElementById('importFileInput').value = '';
+    document.getElementById('selectedFileInfo').innerText = 'Ningún archivo seleccionado';
+    document.getElementById('btnProcessImport').style.display = 'none';
+    loadedBackupData = null;
+
+  } catch (error) {
+    console.error(error);
+    showStatus('❌ Ocurrió un error procesando los datos internos', 3000);
+  }
 });
 
 // ========== CONFIGURACIÓN DE DÍAS LABORABLES ==========
@@ -200,9 +380,9 @@ async function loadAttendanceForToday() {
   document.getElementById('todayDate').innerText = `Hoy: ${today}`;
   document.getElementById('workDayWarning').style.display = workingDays.includes(dayOfWeek) ? 'none' : 'block';
 
-  const persons = await db.persons.toArray();
+  const presidential_persons = await db.persons.toArray();
   const container = document.getElementById('attendanceList');
-  if (persons.length === 0) {
+  if (presidential_persons.length === 0) {
     container.innerHTML = '<p>No hay personas para tomar asistencia.</p>';
     return;
   }
@@ -211,7 +391,7 @@ async function loadAttendanceForToday() {
   const savedMap = new Map(saved.map(a => [a.personId, a.estado === 'presente']));
 
   currentAttendanceState = {};
-  container.innerHTML = persons.map(p => {
+  container.innerHTML = presidential_persons.map(p => {
     currentAttendanceState[p.id] = savedMap.has(p.id) ? savedMap.get(p.id) : false;
     return `
       <div class="attendance-item">
@@ -232,14 +412,14 @@ async function loadAttendanceForToday() {
 
 document.getElementById('saveAttendanceBtn').addEventListener('click', async () => {
   const today = getTodayISO();
-  const persons = await db.persons.toArray();
+  const presidential_persons = await db.persons.toArray();
   const previas = await db.attendance.where('date').equals(today).toArray();
   const horasMap = new Map(previas.map(a => [a.personId, a.hora]));
 
   await db.attendance.where('date').equals(today).delete();
   const horaActual = new Date().toTimeString().split(' ')[0];
 
-  const registros = persons.map(p => ({
+  const registros = presidential_persons.map(p => ({
     personId: p.id,
     date: today,
     estado: currentAttendanceState[p.id] ? 'presente' : 'ausente',
@@ -252,14 +432,14 @@ document.getElementById('saveAttendanceBtn').addEventListener('click', async () 
   }
 });
 
-// ========== SECCIÓN 4: REPORTES (DIARIO Y MENSUAL) ==========
+// ========== REPORTES (DIARIO Y MENSUAL) ==========
 document.getElementById('loadHistoryBtn').addEventListener('click', async () => {
   const fecha = document.getElementById('historyDate').value;
   if (!fecha) { showStatus('Selecciona una fecha', 1500); return; }
   
   const asistencias = await db.attendance.where('date').equals(fecha).toArray();
-  const persons = await db.persons.toArray();
-  const pMap = new Map(persons.map(p => [p.id, p]));
+  const presidential_persons = await db.persons.toArray();
+  const pMap = new Map(presidential_persons.map(p => [p.id, p]));
   const resultDiv = document.getElementById('historyResult');
 
   if(asistencias.length === 0) {
@@ -293,8 +473,8 @@ document.getElementById('loadMonthlyReportBtn').addEventListener('click', async 
     }
   }
 
-  const persons = await db.persons.toArray();
-  if(persons.length === 0 || diasLaborables.length === 0) {
+  const presidential_persons = await db.persons.toArray();
+  if(presidential_persons.length === 0 || diasLaborables.length === 0) {
     container.innerHTML = '<p>Sin datos o días laborables válidos.</p>';
     return;
   }
@@ -305,7 +485,7 @@ document.getElementById('loadMonthlyReportBtn').addEventListener('click', async 
   let html = `<table class="report-table">
     <thead><tr><th>Nombre</th><th>Días Lab.</th><th style="color:green;">Pres.</th><th style="color:red;">Inasist.</th></tr></thead><tbody>`;
 
-  persons.forEach(p => {
+  presidential_persons.forEach(p => {
     let pres = 0, aus = 0;
     diasLaborables.forEach(f => {
       if(mapAsist.get(`${p.id}-${f}`) === 'presente') pres++; else aus++;
@@ -316,7 +496,7 @@ document.getElementById('loadMonthlyReportBtn').addEventListener('click', async 
   container.innerHTML = html + '</tbody></table>';
 });
 
-// ========== SECCIÓN 5: ESTADÍSTICAS GENERALES ==========
+// ========== ESTADÍSTICAS GENERALES ==========
 document.getElementById('loadStatsBtn').addEventListener('click', async () => {
   const mSel = document.getElementById('statsMonth').value;
   if(!mSel) { showStatus('Selecciona un mes', 2000); return; }
@@ -327,13 +507,13 @@ document.getElementById('loadStatsBtn').addEventListener('click', async () => {
 
   const diasLaborables = [];
   for(let d=1; d<=totalDias; d++) {
-    if (workingDays.includes(new Date(`${ano}/${mesPad}/${String(d).padStart(2,'0')}`).getDay())) {
+    if (workingDays.includes(new Date(`${ano}/${mesPad}-${String(d).padStart(2,'0')}`).getDay())) {
       diasLaborables.push(`${ano}-${mesPad}-${String(d).padStart(2,'0')}`);
     }
   }
 
-  const persons = await db.persons.toArray();
-  if(persons.length === 0 || diasLaborables.length === 0) {
+  const presidential_persons = await db.persons.toArray();
+  if(presidential_persons.length === 0 || diasLaborables.length === 0) {
     showStatus('No hay datos suficientes', 2000);
     return;
   }
@@ -341,11 +521,11 @@ document.getElementById('loadStatsBtn').addEventListener('click', async () => {
   const asistencias = await db.attendance.where('date').between(`${ano}-${mesPad}-01`, `${ano}-${mesPad}-${String(totalDias).padStart(2,'0')}`, true, true).toArray();
   const mapAsist = new Map(asistencias.map(a => [`${a.personId}-${a.date}`, a.estado]));
 
-  let totalEsperados = persons.length * diasLaborables.length;
+  let totalEsperados = presidential_persons.length * diasLaborables.length;
   let realesPresentes = 0;
   let rankingFaltas = [];
 
-  persons.forEach(p => {
+  presidential_persons.forEach(p => {
     let faltasPersona = 0;
     diasLaborables.forEach(f => {
       if(mapAsist.get(`${p.id}-${f}`) === 'presente') { realesPresentes++; } else { faltasPersona++; }
@@ -355,7 +535,7 @@ document.getElementById('loadStatsBtn').addEventListener('click', async () => {
 
   let tasa = totalEsperados > 0 ? Math.round((realesPresentes / totalEsperados) * 100) : 0;
   
-  document.getElementById('stat-total-persons').innerText = Math.round(persons.length);
+  document.getElementById('stat-total-persons').innerText = Math.round(presidential_persons.length);
   document.getElementById('stat-working-days').innerText = Math.round(diasLaborables.length);
   document.getElementById('stat-attendance-rate').innerText = `${tasa}%`;
 
@@ -377,8 +557,8 @@ document.getElementById('generatePdfBtn').addEventListener('click', async () => 
   if (!fecha) { showStatus('Selecciona una fecha', 2000); return; }
   
   const asistencias = await db.attendance.where('date').equals(fecha).toArray();
-  const persons = await db.persons.toArray();
-  const pMap = new Map(persons.map(p => [p.id, p]));
+  const presidential_persons = await db.persons.toArray();
+  const pMap = new Map(presidential_persons.map(p => [p.id, p]));
 
   if(asistencias.length === 0) { showStatus('Sin datos para exportar', 2000); return; }
 
@@ -388,15 +568,59 @@ document.getElementById('generatePdfBtn').addEventListener('click', async () => 
     return `<tr><td>${p.cedula}</td><td>${p.nombre}</td><td>${a.estado.toUpperCase()}</td><td>${a.hora}</td></tr>`;
   }).join('');
 
+  // Formatear la fecha visualmente para el encabezado de impresión (ej: 09/06/2026)
+  const [aaa, mmm, ddd] = fecha.split('-');
+  const fechaFormateada = `${ddd}/${mmm}/${aaa}`;
+
+  // Se reestructura con un <h1> limpio: "Reporte de Asistencia" y la fecha abajo.
   document.getElementById('printArea').innerHTML = `
-    <h2>Reporte de Asistencia Diario</h2>
-    <p><b>Fecha del Control:</b> ${fecha}</p>
-    <table style="width:100%; border-collapse:collapse;" border="1">
-      <thead><tr><th>Cédula</th><th>Nombre</th><th>Estado</th><th>Hora</th></tr></thead>
+    <h1>Reporte de Asistencia</h1>
+    <p><b>Fecha del reporte:</b> ${fechaFormateada}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Cédula</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Hora</th>
+        </tr>
+      </thead>
       <tbody>${filas}</tbody>
     </table>
   `;
   window.print();
+});
+
+// ========== MODULO: RESETEAR TODA LA BASE DE DATOS ==========
+document.getElementById('resetAllDataBtn').addEventListener('click', async () => {
+  if (!confirm('⚠️ ¿ESTÁS SEGURO? Esta acción borrará de forma PERMANENTE a todo el personal registrado y el historial de asistencias.')) {
+    return;
+  }
+  
+  if (!confirm('🚨 ¿Confirmar reseteo total? Perderás todos los datos locales si no has descargado un respaldo.')) {
+    return;
+  }
+
+  try {
+    await db.persons.clear();
+    await db.attendance.clear();
+    await db.settings.clear();
+
+    workingDays = [1, 2, 3, 4, 5];
+    await db.settings.put({ key: 'workingDays', value: workingDays });
+    
+    await loadSettings();
+
+    showStatus('🔥 Todos los datos han sido eliminados con éxito', 3500);
+    
+    setTimeout(() => {
+      document.getElementById('btnBackToMenu').click();
+    }, 1000);
+
+  } catch (error) {
+    console.error(error);
+    showStatus('❌ Error al intentar resetear la base de datos', 3000);
+  }
 });
 
 // ========== UTILIDADES GENERALES ==========
