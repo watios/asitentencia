@@ -126,13 +126,13 @@ document.getElementById('btnBackupMonth').addEventListener('click', async () => 
 
 // 2. Respaldo exclusivo de Personal
 document.getElementById('btnBackupPersons').addEventListener('click', async () => {
-  const persons = await db.persons.toArray();
-  if (persons.length === 0) { showStatus('⚠️ La lista de personal está vacía', 2500); return; }
+  const presidential_persons = await db.persons.toArray();
+  if (presidential_persons.length === 0) { showStatus('⚠️ La lista de personal está vacía', 2500); return; }
 
   const backupData = {
     tipoRespaldo: "personal_completo",
     fechaExportacion: new Date().toISOString(),
-    datos: persons
+    datos: presidential_persons
   };
 
   const fileName = `RespaldoAsistencia-Personal-${getFormattedCurrentDate()}.json`;
@@ -142,7 +142,7 @@ document.getElementById('btnBackupPersons').addEventListener('click', async () =
 
 // 3. Respaldo General (Toda la BD)
 document.getElementById('btnBackupAll').addEventListener('click', async () => {
-  const persons = await db.persons.toArray();
+  const presidential_persons = await db.persons.toArray();
   const attendance = await db.attendance.toArray();
   const settings = await db.settings.toArray();
 
@@ -150,7 +150,7 @@ document.getElementById('btnBackupAll').addEventListener('click', async () => {
     tipoRespaldo: "base_datos_completa",
     fechaExportacion: new Date().toISOString(),
     tablas: {
-      persons: persons,
+      persons: presidential_persons,
       attendance: attendance,
       settings: settings
     }
@@ -278,18 +278,18 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async () =>
 
 // ========== CRUD PERSONAS ==========
 async function loadPersons() {
-  let persons = await db.persons.toArray();
+  let presidential_persons = await db.persons.toArray();
   const container = document.getElementById('personList');
-  if (persons.length === 0) {
+  if (presidential_persons.length === 0) {
     container.innerHTML = '<p>No hay personas registradas.</p>';
     return;
   }
   if (searchFilterQuery.trim() !== '') {
     const query = searchFilterQuery.toLowerCase().trim();
-    persons = persons.filter(p => p.nombre.toLowerCase().includes(query) || p.cedula.toLowerCase().includes(query));
+    presidential_persons = presidential_persons.filter(p => p.nombre.toLowerCase().includes(query) || p.cedula.toLowerCase().includes(query));
   }
   
-  container.innerHTML = persons.map(p => `
+  container.innerHTML = presidential_persons.map(p => `
     <div class="person-item">
       <div class="person-info">
         <div class="nombre">${escapeHtml(p.nombre)} <span class="tag-sexo">(${escapeHtml(p.sexo || 'M')})</span></div>
@@ -551,7 +551,7 @@ document.getElementById('loadStatsBtn').addEventListener('click', async () => {
   document.getElementById('statsResult').style.display = 'block';
 });
 
-// ========== EXPORTACIÓN PDF DIARIO ==========
+// ========== EXPORTACIÓN PDF DIARIO MEJORADO ==========
 document.getElementById('generatePdfBtn').addEventListener('click', async () => {
   const fecha = document.getElementById('historyDate').value;
   if (!fecha) { showStatus('Selecciona una fecha', 2000); return; }
@@ -562,31 +562,79 @@ document.getElementById('generatePdfBtn').addEventListener('click', async () => 
 
   if(asistencias.length === 0) { showStatus('Sin datos para exportar', 2000); return; }
 
+  let countPresentes = 0;
+  let countAusentes = 0;
+
   let filas = asistencias.map(a => {
     const p = pMap.get(a.personId);
     if(!p) return '';
-    return `<tr><td>${p.cedula}</td><td>${p.nombre}</td><td>${a.estado.toUpperCase()}</td><td>${a.hora}</td></tr>`;
+    
+    const isPresente = a.estado === 'presente';
+    if(isPresente) countPresentes++; else countAusentes++;
+
+    const badgeClase = isPresente ? 'print-status-present' : 'print-status-absent';
+    const estadoTexto = isPresente ? 'PRESENTE' : 'AUSENTE';
+
+    return `<tr>
+      <td style="font-family: monospace; font-size: 10.5pt;">${escapeHtml(p.cedula)}</td>
+      <td><b>${escapeHtml(p.nombre)}</b></td>
+      <td class="${badgeClase}">${estadoTexto}</td>
+      <td>${a.hora || '--:--:--'}</td>
+    </tr>`;
   }).join('');
 
-  // Formatear la fecha visualmente para el encabezado de impresión (ej: 09/06/2026)
   const [aaa, mmm, ddd] = fecha.split('-');
   const fechaFormateada = `${ddd}/${mmm}/${aaa}`;
 
-  // Se reestructura con un <h1> limpio: "Reporte de Asistencia" y la fecha abajo.
+  // Reestructuración completa con el diseño corporativo formal
   document.getElementById('printArea').innerHTML = `
-    <h1>Reporte de Asistencia</h1>
-    <p><b>Fecha del reporte:</b> ${fechaFormateada}</p>
-    <table>
+    <div class="print-header">
+      <div class="print-title-container">
+        <h1 class="print-main-title">REPORTE DIARIO DE ASISTENCIA</h1>
+        <p class="print-subtitle">Sistema Local Integrado de Control de Personal</p>
+      </div>
+      <div class="print-date-badge">
+        <strong>Fecha Evaluada:</strong><br>${fechaFormateada}
+      </div>
+    </div>
+
+    <div class="print-summary-grid">
+      <div class="print-summary-card">
+        <span class="print-card-val">${asistencias.length}</span>
+        <span class="print-card-lbl">Total Evaluados</span>
+      </div>
+      <div class="print-summary-card present">
+        <span class="print-card-val">${countPresentes}</span>
+        <span class="print-card-lbl">Presentes</span>
+      </div>
+      <div class="print-summary-card absent">
+        <span class="print-card-val">${countAusentes}</span>
+        <span class="print-card-lbl">Ausentes</span>
+      </div>
+    </div>
+
+    <table class="print-table-report">
       <thead>
         <tr>
-          <th>Cédula</th>
-          <th>Nombre</th>
-          <th>Estado</th>
-          <th>Hora</th>
+          <th style="width: 22%;">Cédula de Identidad</th>
+          <th style="width: 48%;">Nombre Completo</th>
+          <th style="width: 15%;">Estado</th>
+          <th style="width: 15%;">Hora de Registro</th>
         </tr>
       </thead>
       <tbody>${filas}</tbody>
     </table>
+
+    <div class="print-footer-signatures">
+      <div class="print-signature-box">
+        <div class="print-line"></div>
+        <p>Firma del Responsable</p>
+      </div>
+      <div class="print-signature-box">
+        <div class="print-line"></div>
+        <p>Sello Institucional</p>
+      </div>
+    </div>
   `;
   window.print();
 });

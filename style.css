@@ -244,59 +244,177 @@ input[type="text"], input[type="date"], input[type="month"], select {
 }
 
 /* ==========================================================================
-   🚨 CONFIGURACIÓN PARA IMPRESIÓN (MEDIOS DE IMPRESIÓN / PDF)
+   🚨 CONFIGURACIÓN PARA IMPRESIÓN MEJORADA (MEDIOS DE IMPRESIÓN / PDF)
    ========================================================================== */
 @media print {
-  /* Ocultar toda la interfaz de la aplicación de raíz */
-  body * {
+  /* Ocultar la interfaz entera de la aplicación en pantalla */
+  body > *:not(#printArea) {
     display: none !important;
   }
 
-  /* Habilitar únicamente el contenedor limpio de impresión y sus hijos */
-  #printArea, #printArea * {
-    display: block !important;
-  }
-
+  /* Mostrar exclusivamente el área formalizada de impresión */
   #printArea {
-    position: absolute;
-    left: 0;
-    top: 0;
+    display: block !important;
+    position: relative;
     width: 100%;
     margin: 0;
-    padding: 20px;
+    padding: 10px 0;
     background: white;
     color: black;
-  }
-
-  /* Estilos para que la tabla en el papel/PDF se vea formal y pulcra */
-  #printArea table {
-    display: table !important;
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-  }
-
-  #printArea tr {
-    display: table-row !important;
-  }
-
-  #printArea th, #printArea td {
-    display: table-cell !important;
-    padding: 8px 10px;
-    border: 1px solid #333 !important;
-    text-align: left;
-    font-size: 11pt;
-  }
-
-  #printArea th {
-    background-color: #f2f2f2 !important;
+    font-family: Arial, sans-serif;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* Encabezado del Documento */
+  .print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 3px solid #1976D2;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .print-title-container {
+    flex: 1;
+  }
+
+  .print-main-title {
+    margin: 0;
+    font-size: 20pt;
+    color: #111;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  .print-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 10pt;
+    color: #555;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .print-date-badge {
+    font-size: 11pt;
+    background: #f5f5f5 !important;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Bloques de Resumen Estadístico en PDF */
+  .print-summary-grid {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+  }
+
+  .print-summary-card {
+    flex: 1;
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    border-radius: 6px;
+    background: #fafafa !important;
+  }
+
+  .print-summary-card.present {
+    background: #e8f5e9 !important;
+    border-color: #a5d6a7;
+  }
+
+  .print-summary-card.absent {
+    background: #ffebee !important;
+    border-color: #ef9a9a;
+  }
+
+  .print-card-val {
+    display: block;
+    font-size: 15pt;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 2px;
+  }
+
+  .print-card-lbl {
+    font-size: 8pt;
+    color: #555;
+    text-transform: uppercase;
     font-weight: bold;
   }
-  
-  #printArea h1, #printArea p {
+
+  /* Tabla de Datos Institucional */
+  .print-table-report {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 50px;
+  }
+
+  .print-table-report tr {
+    page-break-inside: avoid;
+  }
+
+  .print-table-report th {
+    background-color: #1976D2 !important;
+    color: white !important;
+    font-weight: bold;
     text-align: left;
-    margin-bottom: 8px;
+    padding: 10px 12px;
+    font-size: 10pt;
+    text-transform: uppercase;
+    border: 1px solid #1976D2;
+  }
+
+  .print-table-report td {
+    padding: 9px 12px;
+    border: 1px solid #e0e0e0;
+    font-size: 10pt;
+    color: #333;
+  }
+
+  .print-table-report tbody tr:nth-child(even) {
+    background-color: #f9f9f9 !important;
+  }
+
+  /* Indicadores de Estados */
+  .print-status-present {
+    color: #2e7d32 !important;
+    font-weight: bold;
+  }
+
+  .print-status-absent {
+    color: #c62828 !important;
+    font-weight: bold;
+  }
+
+  /* Sección de Firmas al final del papel */
+  .print-footer-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 60px;
+    page-break-inside: avoid;
+  }
+
+  .print-signature-box {
+    width: 42%;
+    text-align: center;
+  }
+
+  .print-line {
+    border-top: 1px solid #333;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+
+  .print-signature-box p {
+    margin: 0;
+    font-size: 9pt;
+    color: #444;
+    font-weight: bold;
+    text-transform: uppercase;
   }
 }
