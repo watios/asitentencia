@@ -1,0 +1,203 @@
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+  color: #212121;
+}
+
+.app-header {
+  background: #1976D2;
+  color: white;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-header h1 {
+  margin: 0 0 12px 0;
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 28px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.2s;
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.btn.primary {
+  background: #FFA000;
+  color: #212121;
+}
+.btn.secondary {
+  background: #1565C0;
+  border: 1px solid white;
+}
+.btn.success {
+  background: #2E7D32;
+  color: white;
+}
+.btn.danger {
+  background: #C62828;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+.tabs {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 108px;
+  background: white;
+  z-index: 9;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 14px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.tab-btn.active {
+  color: #1976D2;
+  border-bottom: 3px solid #1976D2;
+}
+
+.tab-content {
+  display: none;
+  padding: 16px;
+  animation: fade 0.2s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+input, button {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: #1976D2;
+}
+
+.person-list, .attendance-list, .history-result {
+  margin-top: 12px;
+}
+
+.person-item, .attendance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.person-info .nombre {
+  font-weight: bold;
+}
+
+.person-info .cedula {
+  font-size: 0.8rem;
+  color: gray;
+}
+
+.delete-person {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.delete-person:active {
+  opacity: 0.7;
+}
+
+.attendance-item label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.attendance-item input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.status {
+  position: fixed;
+  bottom: 20px;
+  left: 16px;
+  right: 16px;
+  background: #323232;
+  color: white;
+  padding: 10px;
+  border-radius: 28px;
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: 0.2s;
+  pointer-events: none;
+  z-index: 100;
+}
+.status.show {
+  opacity: 1;
+}
+
+.history-result p {
+  background: #f0f0f0;
+  padding: 8px;
+  border-radius: 8px;
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Asistencia Diaria</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1976D2">
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231976D2'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E📋%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="app-header">
+    <h1>📋 Asistencia Diaria</h1>
+    <div class="button-group">
+      <button id="btnInstall" class="btn primary">📲 Instalar App</button>
+      <button id="btnShortcut" class="btn secondary">🔗 Crear Acceso Directo</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="persons">👥 Personas</button>
+    <button class="tab-btn" data-tab="attendance">✅ Asistencia Hoy</button>
+    <button class="tab-btn" data-tab="history">📅 Historial</button>
+  </div>
+
+  <div id="persons-tab" class="tab-content active">
+    <div class="card">
+      <h3>Agregar nueva persona</h3>
+      <input type="text" id="personName" placeholder="Nombre completo" autocomplete="off">
+      <input type="text" id="personCedula" placeholder="Cédula de identidad (única)" autocomplete="off">
+      <button id="addPersonBtn" class="btn success">➕ Añadir persona</button>
+    </div>
+    <div class="card">
+      <h3>Lista de personas</h3>
+      <div id="personList" class="person-list">Cargando...</div>
+    </div>
+  </div>
+
+  <div id="attendance-tab" class="tab-content">
+    <div class="card">
+      <h3 id="todayDate"></h3>
+      <div id="attendanceList" class="attendance-list">Cargando personas...</div>
+      <button id="saveAttendanceBtn" class="btn success">💾 Guardar asistencia de hoy</button>
+    </div>
+  </div>
+
+  <div id="history-tab" class="tab-content">
+    <div class="card">
+      <h3>Consultar asistencia por fecha</h3>
+      <input type="date" id="historyDate">
+      <button id="loadHistoryBtn" class="btn primary">Ver asistencias</button>
+      <div id="historyResult" class="history-result"></div>
+    </div>
+  </div>
+
+  <div id="statusMsg" class="status"></div>
+
+  <script src="dexie.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('SW registrado con éxito:', reg.scope))
+          .catch(err => console.error('Error al registrar el SW:', err));
+      });
+    }
+  </script>
+</body>
+</html>
