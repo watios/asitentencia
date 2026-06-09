@@ -11,61 +11,195 @@
 </head>
 <body>
   <div class="app-header">
-    <h1>📋 Asistencia Diaria</h1>
-    <div class="button-group">
-      <button id="btnInstall" class="btn primary">📲 Instalar App</button>
-      <button id="btnShortcut" class="btn secondary">🔗 Crear Acceso Directo</button>
+    <button id="btnBackToMenu" class="btn-back-nav" aria-label="Volver al menú" style="visibility: hidden;">⬅️</button>
+    <h1 id="appTitle">📋 Asistencia Diaria</h1>
+  </div>
+
+  <div id="main-menu" class="menu-grid active">
+    <div class="menu-item" data-target="sec-persons">
+      <div class="menu-icon">👥</div>
+      <div class="menu-label">Personas</div>
+      <div class="menu-desc">Agregar, editar y eliminar</div>
+    </div>
+    <div class="menu-item" data-target="sec-config">
+      <div class="menu-icon">⚙️</div>
+      <div class="menu-label">Configuración</div>
+      <div class="menu-desc">Días de la semana laborables</div>
+    </div>
+    <div class="menu-item" data-target="sec-attendance">
+      <div class="menu-icon">✅</div>
+      <div class="menu-label">Asistencia</div>
+      <div class="menu-desc">Pasar lista el día de hoy</div>
+    </div>
+    <div class="menu-item" data-target="sec-reports">
+      <div class="menu-icon">📊</div>
+      <div class="menu-label">Reportes</div>
+      <div class="menu-desc">Diario, mensual e inasistencias</div>
+    </div>
+    <div class="menu-item" data-target="sec-stats">
+      <div class="menu-icon">📈</div>
+      <div class="menu-label">Estadísticas</div>
+      <div class="menu-desc">Métricas generales del mes</div>
+    </div>
+    <div class="menu-item setup-pwa-btn" id="menuInstallBtn">
+      <div class="menu-icon">📲</div>
+      <div class="menu-label">Instalar App</div>
+      <div class="menu-desc">Manual de acceso directo</div>
     </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="persons">👥 Personas</button>
-    <button class="tab-btn" data-tab="attendance">✅ Asistencia Hoy</button>
-    <button class="tab-btn" data-tab="history">📅 Historial</button>
-  </div>
-
-  <div id="persons-tab" class="tab-content active">
+  <div id="sec-persons" class="section-content">
     <div class="card">
-      <h3>Agregar nueva persona</h3>
+      <h3>➕ Agregar nueva persona</h3>
       <input type="text" id="personName" placeholder="Nombre completo" autocomplete="off">
       <input type="text" id="personCedula" placeholder="Cédula de identidad (única)" autocomplete="off">
-      <button id="addPersonBtn" class="btn success">➕ Añadir persona</button>
+      <label for="personSexo" class="field-label">Sexo:</label>
+      <select id="personSexo" class="form-select">
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <button id="addPersonBtn" class="btn success">Añadir persona</button>
     </div>
+
     <div class="card">
-      <h3>Lista de personas</h3>
+      <h3>👥 Lista de personas</h3>
+      <input type="text" id="searchPersonInput" placeholder="🔍 Buscar por nombre o cédula..." autocomplete="off" style="margin-bottom: 15px;">
       <div id="personList" class="person-list">Cargando...</div>
     </div>
   </div>
 
-  <div id="attendance-tab" class="tab-content">
+  <div id="sec-config" class="section-content">
+    <div class="card">
+      <h3>⚙️ Días Laborables de la Semana</h3>
+      <p class="section-desc">Selecciona cuáles días de la semana se toman en cuenta para evaluar las inasistencias en los reportes mensuales:</p>
+      <div class="days-checkbox-grid">
+        <label class="chk-label"><input type="checkbox" id="workDay-1" value="1"> Lun</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-2" value="2"> Mar</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-3" value="3"> Mié</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-4" value="4"> Jue</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-5" value="5"> Vie</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-6" value="6"> Sáb</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-0" value="0"> Dom</label>
+      </div>
+      <button id="saveSettingsBtn" class="btn primary" style="margin-top: 10px;">💾 Guardar Configuración Semanal</button>
+    </div>
+  </div>
+
+  <div id="sec-attendance" class="section-content">
     <div class="card">
       <h3 id="todayDate"></h3>
+      <p id="workDayWarning" class="warning-text" style="display: none;">⚠️ ¡Atención! Hoy está configurado como día NO LABORABLE.</p>
       <div id="attendanceList" class="attendance-list">Cargando personas...</div>
       <button id="saveAttendanceBtn" class="btn success">💾 Guardar asistencia de hoy</button>
     </div>
   </div>
 
-  <div id="history-tab" class="tab-content">
+  <div id="sec-reports" class="section-content">
     <div class="card">
-      <h3>Consultar asistencia por fecha</h3>
+      <h3>📅 1. Consulta Diaria e Impresión</h3>
       <input type="date" id="historyDate">
-      <button id="loadHistoryBtn" class="btn primary">Ver asistencias</button>
+      <div class="button-group">
+        <button id="loadHistoryBtn" class="btn primary">Ver asistencias</button>
+        <button id="generatePdfBtn" class="btn secondary">📄 Imprimir / PDF</button>
+      </div>
       <div id="historyResult" class="history-result"></div>
+    </div>
+
+    <div class="card">
+      <h3>📊 2. Reporte Mensual de Inasistencias</h3>
+      <p class="section-desc">Calcula asistencias e inasistencias totales cruzando los días laborables configurados.</p>
+      <input type="month" id="reportMonth">
+      <button id="loadMonthlyReportBtn" class="btn success" style="background-color: #673AB7;">Generar Reporte Mensual</button>
+      <div id="monthlyReportResult" style="margin-top: 15px;"></div>
+    </div>
+  </div>
+
+  <div id="sec-stats" class="section-content">
+    <div class="card">
+      <h3>📈 Resumen Estadístico del Mes</h3>
+      <p class="section-desc">Selecciona un mes para calcular las métricas de rendimiento y porcentajes de asistencia global:</p>
+      <input type="month" id="statsMonth">
+      <button id="loadStatsBtn" class="btn primary" style="background-color: #009688;">Calcular Estadísticas</button>
+      
+      <div id="statsResult" style="margin-top: 20px; display: none;">
+        <div class="stats-box-grid">
+          <div class="stat-box">
+            <span class="stat-num" id="stat-total-persons">0</span>
+            <span class="stat-label">Personas Activas</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" id="stat-working-days">0</span>
+            <span class="stat-label">Días Laborables</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" id="stat-attendance-rate">0%</span>
+            <span class="stat-label">Tasa de Asistencia</span>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <h4>🚨 Alerta: Más Inasistencias en el Mes</h4>
+          <div id="statsTopAbsences"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pwaHelpModal" class="modal-overlay">
+    <div class="modal-content installation-guide">
+      <h3>📲 Instalar en tu Dispositivo</h3>
+      <p class="guide-intro">Para tener esta aplicación en tu pantalla de inicio como una app nativa:</p>
+      
+      <div class="guide-tabs">
+        <div class="guide-tab-box android-guide">
+          <h4>🤖 En Android (Chrome)</h4>
+          <ol>
+            <li>Toca el botón de los <strong>tres puntos (⋮)</strong> en la esquina superior derecha del navegador.</li>
+            <li>Selecciona la opción <strong>"Añadir a la pantalla de inicio"</strong> o <strong>"Instalar aplicación"</strong>.</li>
+            <li>Confirma la acción para crear tu acceso directo en el escritorio.</li>
+          </ol>
+        </div>
+        
+        <div class="guide-tab-box ios-guide">
+          <h4>🍏 En iPhone / iOS (Safari)</h4>
+          <ol>
+            <li>Presiona el botón de <strong>Compartir</strong> (el icono del cuadrado con una flecha hacia arriba) en la barra inferior.</li>
+            <li>Desliza el menú hacia abajo y pulsa sobre <strong>"Añadir a la pantalla de inicio"</strong>.</li>
+            <li>Toca <strong>"Añadir"</strong> arriba a la derecha.</li>
+          </ol>
+        </div>
+      </div>
+
+      <button id="closePwaHelpBtn" class="btn secondary" style="margin-top: 15px; margin-bottom: 0;">Entendido</button>
+    </div>
+  </div>
+
+  <div id="editPersonModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Editar Datos de Persona</h3>
+      <input type="hidden" id="editPersonId">
+      <label for="editPersonName">Nombre completo:</label>
+      <input type="text" id="editPersonName" autocomplete="off">
+      <label for="editPersonCedula">Cédula de identidad:</label>
+      <input type="text" id="editPersonCedula" autocomplete="off">
+      <label for="editPersonSexo">Sexo:</label>
+      <select id="editPersonSexo" class="form-select">
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <div class="button-group" style="margin-top: 15px;">
+        <button id="cancelEditBtn" class="btn secondary" style="margin-bottom: 0;">Cancelar</button>
+        <button id="saveEditBtn" class="btn primary" style="margin-bottom: 0; background-color: #4CAF50;">Guardar</button>
+      </div>
     </div>
   </div>
 
   <div id="statusMsg" class="status"></div>
+  <div id="printArea" class="print-only"></div>
 
   <script src="dexie.min.js"></script>
   <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('SW registrado con éxito:', reg.scope))
-          .catch(err => console.error('Error al registrar el SW:', err));
-      });
-    }
-  </script>
 </body>
 </html>
