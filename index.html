@@ -41,6 +41,11 @@
       <div class="menu-label">Gestión de Datos</div>
       <div class="menu-desc">Importar, Exportar y Reseteo JSON</div>
     </div>
+    <div class="menu-item" id="menu-item-update" style="cursor: pointer;">
+      <div class="menu-icon">🔄</div>
+      <div class="menu-label">Actualizar App</div>
+      <div class="menu-desc">Buscar actualizaciones del sistema</div>
+    </div>
   </div>
 
   <div id="sec-hogares" class="section-content">
@@ -101,101 +106,158 @@
         <option value="Si">Si</option>
       </select>
 
-      <label for="hogarAnosConst">Años de Construcción de la Casa (*):</label>
+      <label for="hogarAnosConst">Años de Residencia (*):</label>
       <input type="number" id="hogarAnosConst" min="0" value="0">
 
-      <label style="font-weight: bold; margin-top: 15px; display: block;">Foto de la Fachada de la Casa (Opcional):</label>
-      <div style="margin: 10px 0; text-align: center;">
-        <button type="button" class="btn primary" onclick="document.getElementById('hogarFotoInput').click()">📸 Tomar / Seleccionar Foto</button>
-        <input type="file" id="hogarFotoInput" accept="image/*" capture="environment" style="display:none;">
-        
-        <div id="hogarFotoPreviewContainer" style="display:none; margin-top:15px; position:relative; inline-block;">
-          <img id="hogarFotoPreview" src="" alt="Vista previa" style="max-width:100%; max-height:200px; border-radius:8px; border:2px solid #1976D2; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
-          <br>
-          <button type="button" id="btnQuitarFoto" class="btn" style="background-color:#d32f2f; color:white; padding:4px 10px; font-size:0.8rem; margin-top:5px;">🗑️ Quitar Foto</button>
-        </div>
-        <div id="hogarFotoStatus" style="font-size:0.8rem; color:#666; margin-top:5px;">Sin foto cargada</div>
+      <label>Fotografía de la Vivienda (Máx 70KB):</label>
+      <div style="margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap;">
+        <label for="hogarFotoInput" class="btn secondary" style="cursor: pointer; text-align: center; margin: 0;">📸 Capturar / Cargar Foto</label>
+        <input type="file" id="hogarFotoInput" accept="image/*" style="display: none;">
+        <button type="button" id="btnQuitarFoto" class="btn" style="background-color: #757575; color: white;">🗑️ Eliminar Foto</button>
+      </div>
+      <div id="hogarFotoStatus" style="font-size: 0.85rem; color: #666; font-style: italic; margin-bottom: 8px;">Sin foto cargada</div>
+      
+      <div id="hogarFotoPreviewContainer" style="display: none; margin-bottom: 15px; text-align: center;">
+        <img id="hogarFotoPreview" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
       </div>
 
-      <button id="btnGuardarHogar" class="btn success">Guardar Registro</button>
-      <button id="btnCancelarHogarEdicion" class="btn secondary" style="display:none;">Cancelar Edición</button>
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button id="btnGuardarHogar" class="btn success">💾 Guardar Hogar</button>
+        <button id="btnCancelarHogarEdicion" class="btn secondary" style="display: none; background-color: #757575;">❌ Cancelar</button>
+      </div>
     </div>
 
     <div class="card">
-      <h3>👥 Padrones de Hogares Registrados</h3>
-      <input type="text" id="searchHogarInput" placeholder="🔍 Buscar por Nombre o Cédula..." autocomplete="off">
-      <div id="hogaresList" class="person-list">Cargando datos locales...</div>
+      <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 1.2rem;">🔍</span>
+        <input type="text" id="searchHogarInput" placeholder="Buscar por Nombre o Cédula..." autocomplete="off" style="margin: 0; padding: 10px;">
+      </div>
+      <div id="hogaresList"></div>
     </div>
   </div>
 
   <div id="sec-localidades" class="section-content">
     <div class="card">
-      <h3>📍 Agregar / Editar Localidad</h3>
+      <h3>➕ Agregar Localidad</h3>
       <input type="hidden" id="locId">
-      <input type="text" id="locNombre" placeholder="Nombre de la localidad" autocomplete="off">
-      <button id="btnGuardarLoc" class="btn success">Guardar Localidad</button>
-      <button id="btnCancelarLoc" class="btn secondary" style="display:none;">Cancelar</button>
+      <label for="locNombre">Nombre de la Localidad (*):</label>
+      <input type="text" id="locNombre" placeholder="Ej. El Bichar" autocomplete="off">
+      
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="btnGuardarLoc" class="btn success">💾 Guardar Localidad</button>
+        <button id="btnCancelarLocEdicion" class="btn secondary" style="display: none; background-color: #757575;">❌ Cancelar</button>
+      </div>
     </div>
     <div class="card">
-      <h3>📋 Localidades Existentes</h3>
-      <div id="localidadesList" class="person-list"></div>
+      <h3>📋 Localidades en el Sistema</h3>
+      <div id="localidadesList"></div>
     </div>
   </div>
 
   <div id="sec-sectores" class="section-content">
     <div class="card">
-      <h3>🗺️ Agregar / Editar Sector</h3>
+      <h3>➕ Agregar Sector</h3>
       <input type="hidden" id="secId">
-      <label for="secLocalidadBelongs">Pertenece a Localidad:</label>
+      
+      <label for="secLocalidadBelongs">Localidad de Adscripción (*):</label>
       <select id="secLocalidadBelongs" class="form-select"></select>
-      <input type="text" id="secNombre" placeholder="Nombre del Sector" autocomplete="off">
-      <button id="btnGuardarSec" class="btn success">Guardar Sector</button>
-      <button id="btnCancelarSec" class="btn secondary" style="display:none;">Cancelar</button>
+
+      <label for="secNombre">Nombre del Sector (*):</label>
+      <input type="text" id="secNombre" placeholder="Ej. Sector Centro" autocomplete="off">
+
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="btnGuardarSec" class="btn success">💾 Guardar Sector</button>
+        <button id="btnCancelarSecEdicion" class="btn secondary" style="display: none; background-color: #757575;">❌ Cancelar</button>
+      </div>
     </div>
     <div class="card">
-      <h3>📋 Listado de Sectores por Localidad</h3>
-      <div id="sectoresList" class="person-list"></div>
+      <h3>📋 Sectores Registrados</h3>
+      <div id="sectoresList"></div>
     </div>
   </div>
 
   <div id="sec-reportes" class="section-content">
-    <div class="card">
-      <h3>📊 Generar Reportes Estructurados</h3>
+    <div class="card no-print">
+      <h3>📊 Filtros y Consolidación de Reportes</h3>
       
-      <label for="repTipo">Selecciona el tipo de reporte:</label>
-      <select id="repTipo" class="form-select">
-        <option value="localidad">1) Por Localidad</option>
-        <option value="sector">2) Por Sector</option>
-        <option value="costera">3) Zona Costera (Localidad, Sector, Nombre)</option>
-        <option value="hijos">4) Con Hijos (Familias con hijos registrados)</option>
+      <label for="repLocalidad">Filtrar por Localidad:</label>
+      <select id="repLocalidad" class="form-select"></select>
+
+      <label for="repSector">Filtrar por Sector:</label>
+      <select id="repSector" class="form-select">
+        <option value="">-- Todos los Sectores --</option>
       </select>
 
-      <div id="divRepFiltroLocalidad">
-        <label for="repLocalidad">Filtrar por Localidad:</label>
-        <select id="repLocalidad" class="form-select"></select>
-      </div>
+      <label for="repCostera">Filtro de Zona Costera:</label>
+      <select id="repCostera" class="form-select">
+        <option value="TODOS">-- Todos --</option>
+        <option value="Si">Solo Zona Costera</option>
+        <option value="No">Excluir Zona Costera</option>
+      </select>
 
-      <div id="divRepFiltroSector" style="display:none;">
-        <label for="repSector">Filtrar por Sector:</label>
-        <select id="repSector" class="form-select"><option value="">Seleccione la localidad primero...</option></select>
-      </div>
+      <label for="repCarga">Carga Familiar:</label>
+      <select id="repCarga" class="form-select">
+        <option value="TODOS">-- Todos --</option>
+        <option value="CON_HIJOS">Cabezas de Familia con Hijos</option>
+        <option value="SIN_HIJOS">Sin Hijos Registrados</option>
+      </select>
 
-      <button id="btnGenerarReporte" class="btn primary">🔍 Buscar y Procesar Datos</button>
-      <button id="btnImprimirReporte" class="btn secondary" style="display:none;">🖨️ Imprimir / Guardar PDF</button>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px;">
+        <button id="btnFiltrarReporte" class="btn primary">🔍 Aplicar Filtros</button>
+        <button id="btnImprimirReporte" class="btn success" style="background-color: #009688;">🖨️ Imprimir Reporte Oficial</button>
+      </div>
     </div>
 
-    <div class="card" id="cardResultadosReporte" style="display:none;">
-      <h3>📋 Vista de Resultados</h3>
-      <div id="reporteContenidoTabla" style="overflow-x:auto;"></div>
+    <div class="card printable-report">
+      <div class="report-header-print">
+        <h2>REPORTE CONSOLIDADO DE HABITANTES Y EJIDOS</h2>
+        <p>Ámbito Geográfico Local - Estado Nueva Esparta</p>
+        <div id="printMetaDate" style="font-size:0.85rem; color:#555; margin-top:4px;"></div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="num" id="statTotalHogares">0</div>
+          <div class="lab">Hogares Consolidados</div>
+        </div>
+        <div class="metric-box">
+          <div class="num" id="statTotalHijos">0</div>
+          <div class="lab">Total Hijos en Ámbito</div>
+        </div>
+        <div class="metric-box">
+          <div class="num" id="statTotalCostera">0</div>
+          <div class="lab">Familias en Costa</div>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Cabeza de Familia</th>
+              <th>Localidad / Sector</th>
+              <th>Teléfono</th>
+              <th>Hijos</th>
+              <th>Costa</th>
+              <th>Organización</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <tr>
+              <td colspan="7" style="text-align:center; color:#999; padding: 20px;">Utiliza los filtros superiores para renderizar la sábana de datos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <div id="sec-datos" class="section-content">
     <div class="card">
-      <h3>📥 Exportar Archivos de Respaldo (.JSON)</h3>
-      <p class="section-desc">Descarga los repositorios locales a tu dispositivo para salvaguardar la información.</p>
-      <button id="btnExpDataCompleta" class="btn primary">📦 Descargar Data Completa Global</button>
-      <button id="btnExpLocSectores" class="btn success">📍 Descargar Estructura (Localidades + Sectores)</button>
+      <h3>📥 Respaldar / Exportar Datos (.JSON)</h3>
+      <p class="section-desc">Genera una copia en tiempo real de todos tus datos locales de Dexie.js para guardarla en tu computadora o pendrive.</p>
+      <button id="btnExportarTodo" class="btn primary">💾 Descargar Respaldo Estructurado</button>
     </div>
 
     <div class="card">
@@ -214,7 +276,7 @@
     </div>
   </div>
 
-  <div id="toastStatus" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:12px 24px; border-radius:30px; z-index:9999; font-size:0.9rem; box-shadow:0 3px 10px rgba(0,0,0,0.2); text-align:center;"></div>
+  <div id="toastStatus" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:12px 24px; border-radius:30px; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:2000; font-size:0.95rem; font-weight:500; text-align:center; min-width:250px;"></div>
 
   <script src="dexie.min.js"></script>
   <script src="app.js"></script>

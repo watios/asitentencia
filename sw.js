@@ -40,3 +40,10 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
+// Receptor de mensajes del cliente para actualizaciones en caliente forzadas
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
