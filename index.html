@@ -83,6 +83,12 @@
       <label for="hogarCasaNo">Número de Casa (Opcional):</label>
       <input type="text" id="hogarCasaNo" autocomplete="off" placeholder="Ej. A-12">
 
+      <label for="hogarGps">Coordenadas GPS (Opcional):</label>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="hogarGps" autocomplete="off" placeholder='Ej. 10°44&apos;27.15"N 63°55&apos;48.21"O' style="margin: 0; flex: 1;">
+        <button type="button" id="btnCapturarGps" class="btn primary" style="margin: 0; padding: 0 12px; white-space: nowrap; font-size: 0.9rem;">🛰️ Capturar</button>
+      </div>
+
       <label for="hogarOrganizacion">Organización / Institución (*):</label>
       <select id="hogarOrganizacion" class="form-select">
         <option value="Ninguna">Ninguna</option>

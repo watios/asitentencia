@@ -5,19 +5,16 @@ const db = new Dexie('ControlEjidosDB');
 db.version(1).stores({
   localidades: '++id, nombre',
   sectores: '++id, localidadId, nombre',
-  hogares: '++id, cedula, nombre, localidadId, sectorId, costera, hijos' // Mantiene compatibilidad nativa
+  hogares: '++id, cedula, nombre, localidadId, sectorId, costera, hijos' 
 });
 
-// Variables de estado global de la interfaz
 let activeSearchQuery = '';
 let selectedImportData = null;
-let importType = ''; // 'completa' o 'estructura'
-let currentFotoBase64 = ''; // Almacena temporalmente la foto procesada de la casa en Base64
+let importType = ''; 
+let currentFotoBase64 = ''; 
 
-// Localidades iniciales requeridas por especificación técnica
 const localidadesPredefinidas = ["San Pedro", "Bichar", "Guinima", "Amparo", "Guamache", "La Uva", "Zulica"];
 
-// Precarga automática al arrancar la app
 document.addEventListener('DOMContentLoaded', async () => {
   await verificarYPrecargarLocalidades();
   actualizarDesplegablesLocalidades();
@@ -25,6 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadLocalidadesUI();
   loadSectoresUI();
   inicializarManejadorFoto();
+  inicializarManejadorGps(); // Nueva inicialización operativa
 });
 
 async function verificarYPrecargarLocalidades() {
@@ -41,7 +39,6 @@ async function verificarYPrecargarLocalidades() {
 // =========================================================================
 document.querySelectorAll('.menu-item').forEach(item => {
   item.addEventListener('click', () => {
-    // Si es el botón de actualizar, delegar su comportamiento a su propio Listener
     if (item.id === 'menu-item-update') return;
 
     const targetId = item.dataset.target;
@@ -55,7 +52,6 @@ document.querySelectorAll('.menu-item').forEach(item => {
     document.getElementById('btnBackToMenu').style.visibility = 'visible';
     document.getElementById('appTitle').innerText = label;
 
-    // Ejecuciones reactivas al abrir módulos
     if (targetId === 'sec-hogares') { loadHogares(); resetFormHogar(); }
     if (targetId === 'sec-localidades') { loadLocalidadesUI(); resetFormLoc(); }
     if (targetId === 'sec-sectores') { loadSectoresUI(); resetFormSec(); }
@@ -71,7 +67,6 @@ document.getElementById('btnBackToMenu').addEventListener('click', () => {
   document.getElementById('appTitle').innerText = '🏠 Control de Ejidos';
 });
 
-// Helper de avisos rápidos integrados (Toast)
 function showStatus(message, duration = 3000) {
   const toast = document.getElementById('toastStatus');
   toast.innerText = message;
@@ -84,7 +79,6 @@ function showStatus(message, duration = 3000) {
 // =========================================================================
 async function actualizarDesplegablesLocalidades() {
   const locs = await db.localidades.orderBy('nombre').toArray();
-  
   const optionsHtml = '<option value="">Seleccione...</option>' + 
     locs.map(l => `<option value="${l.id}">${escapeHtml(l.nombre)}</option>`).join('');
   
@@ -93,13 +87,11 @@ async function actualizarDesplegablesLocalidades() {
   document.getElementById('repLocalidad').innerHTML = '<option value="">-- Todas --</option>' + locs.map(l => `<option value="${l.id}">${escapeHtml(l.nombre)}</option>`).join('');
 }
 
-// Evento disparador al cambiar localidad en formulario de hogares
 document.getElementById('hogarLocalidad').addEventListener('change', async (e) => {
   const locId = parseInt(e.target.value);
   await actualizarDesplegableSectores(locId, 'hogarSector', 'Seleccione un Sector...');
 });
 
-// Evento disparador en Filtros de Reportes
 document.getElementById('repLocalidad').addEventListener('change', async (e) => {
   const locId = parseInt(e.target.value);
   if (!locId) {
@@ -216,7 +208,51 @@ function mostrarVistaPreviaFoto(base64Data) {
 }
 
 // =========================================================================
-// 4. MÓDULO: CRUD Y VALIDACIÓN DE HOGARES (PROCESO PRINCIPAL)
+// 3.6 TRADUCTOR DE COORDENADAS DECIMALES A FORMATO DMS (PWA GEOLOCALIZACIÓN)
+// =========================================================================
+function inicializarManejadorGps() {
+  document.getElementById('btnCapturarGps').addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      showStatus('❌ Tu navegador no soporta geolocalización.');
+      return;
+    }
+    showStatus('🛰️ Conectando con satélites GPS...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        const latDms = convertirDecimalAGpsDms(lat, true);
+        const lngDms = convertirDecimalAGpsDms(lng, false);
+        
+        document.getElementById('hogarGps').value = `${latDms} ${lngDms}`;
+        showStatus('✅ Coordenadas GPS fijadas con éxito.');
+      },
+      (error) => {
+        console.error(error);
+        showStatus('⚠️ Permiso denegado o señal GPS muy débil.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  });
+}
+
+function convertirDecimalAGpsDms(decimal, esLatitud) {
+  const hemisferio = esLatitud 
+    ? (decimal >= 0 ? 'N' : 'S') 
+    : (decimal >= 0 ? 'E' : 'O');
+  
+  const absVal = Math.abs(decimal);
+  const grados = Math.floor(absVal);
+  const minutosDecimal = (absVal - grados) * 60;
+  const minutos = Math.floor(minutosDecimal);
+  const segundos = ((minutosDecimal - minutos) * 60).toFixed(2);
+  
+  return `${grados}°${minutos}'${segundos}"${hemisferio}`;
+}
+
+// =========================================================================
+// 4. MÓDULO: CRUD Y VALIDACIÓN DE HOGARES
 // =========================================================================
 async function loadHogares() {
   let list = await db.hogares.toArray();
@@ -252,6 +288,7 @@ async function loadHogares() {
         <div class="cedula" style="color:#1976D2; font-weight:500;">
           📍 ${escapeHtml(mapLoc.get(h.localidadId) || 'Indefinida')} - 🧭 ${escapeHtml(mapSec.get(h.sectorId) || 'Sin Sector')}
         </div>
+        ${h.gps ? `<div class="cedula" style="color:#009688;">🛰️ GPS: <strong>${escapeHtml(h.gps)}</strong></div>` : ''}
         <div class="cedula">Hijos: ${h.hijos} | Costa: ${h.costera} | Inst: ${h.organizacion}</div>
       </div>
       <div class="action-buttons" style="flex: 0 0 auto;">
@@ -278,6 +315,7 @@ document.getElementById('btnGuardarHogar').addEventListener('click', async () =>
   const correo = document.getElementById('hogarCorreo').value.trim();
   const telefono = document.getElementById('hogarTelefono').value.trim();
   const casaNo = document.getElementById('hogarCasaNo').value.trim();
+  const gps = document.getElementById('hogarGps').value.trim(); // Lectura del nuevo campo opcional
   const organizacion = document.getElementById('hogarOrganizacion').value;
   const costera = document.getElementById('hogarCostera').value;
   const hijos = parseInt(document.getElementById('hogarHijos').value) || 0;
@@ -298,7 +336,7 @@ document.getElementById('btnGuardarHogar').addEventListener('click', async () =>
 
   const datosHogar = {
     localidadId: locId, sectorId: secId, nombre, cedula, nacionalidad,
-    rif, correo, telefono, casaNo, organizacion, costera, hijos, pareja, anosConst,
+    rif, correo, telefono, casaNo, gps, organizacion, costera, hijos, pareja, anosConst,
     foto: currentFotoBase64 
   };
 
@@ -327,6 +365,7 @@ async function editarHogar(id) {
   document.getElementById('hogarCorreo').value = h.correo || '';
   document.getElementById('hogarTelefono').value = h.telefono;
   document.getElementById('hogarCasaNo').value = h.casaNo || '';
+  document.getElementById('hogarGps').value = h.gps || ''; // Carga del valor GPS para edición
   document.getElementById('hogarOrganizacion').value = h.organizacion;
   document.getElementById('hogarCostera').value = h.costera;
   document.getElementById('hogarHijos').value = h.hijos;
@@ -357,6 +396,7 @@ function resetFormHogar() {
   document.getElementById('hogarCorreo').value = '';
   document.getElementById('hogarTelefono').value = '';
   document.getElementById('hogarCasaNo').value = '';
+  document.getElementById('hogarGps').value = ''; // Reset físico del campo
   document.getElementById('hogarOrganizacion').value = 'Ninguna';
   document.getElementById('hogarCostera').value = 'No';
   document.getElementById('hogarHijos').value = '0';
@@ -439,7 +479,7 @@ async function eliminarLoc(id) {
 }
 
 // =========================================================================
-// 6. MÓDULO: MANTENEDOR CRUD DE SECTORES COSTEROS / INTERNOS
+// 6. MÓDULO: MANTENEDOR CRUD DE SECTORES
 // =========================================================================
 async function loadSectoresUI() {
   const secs = await db.sectores.toArray();
@@ -572,7 +612,7 @@ document.getElementById('btnImprimirReporte').addEventListener('click', () => {
 });
 
 // =========================================================================
-// 8. SUBSISTEMA DE RESPALDO Y PORTABILIDAD LOCAL (JSON AUTOMÁTICO)
+// 8. SUBSISTEMA DE RESPALDO Y PORTABILIDAD LOCAL
 // =========================================================================
 document.getElementById('btnExportarTodo').addEventListener('click', async () => {
   const dataExportacion = {
@@ -694,7 +734,6 @@ if ('serviceWorker' in navigator) {
       .then(reg => {
         clickRegistration = reg;
         
-        // Listener reactivo si encuentra cambios en segundo plano mientras se usa la app
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           newWorker.addEventListener('statechange', () => {
@@ -707,13 +746,11 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('Error registrando Service Worker:', err));
   });
 
-  // Escucha global: si el Service Worker cambia de estado activo, refresca el DOM
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload();
   });
 }
 
-// Evento disparador del botón personalizado del Menú Principal
 document.getElementById('menu-item-update').addEventListener('click', async () => {
   if (!clickRegistration) {
     showStatus('⚠️ El Service Worker no está activo en este navegador.');
@@ -723,10 +760,8 @@ document.getElementById('menu-item-update').addEventListener('click', async () =
   showStatus('🔍 Buscando actualizaciones en el servidor...');
   
   try {
-    // Forzar al Service Worker a descargar y comparar el sw.js remoto byte por byte
     await clickRegistration.update();
     
-    // Pequeño retardo operativo para esperar la validación del estado del hilo instalador
     setTimeout(() => {
       if (!clickRegistration.installing && !clickRegistration.waiting) {
         showStatus('✅ Tienes instalada la versión más reciente.');
@@ -742,7 +777,6 @@ document.getElementById('menu-item-update').addEventListener('click', async () =
 function solicitarActualizacionAlUsuario() {
   if (confirm('📦 ¡Nueva actualización disponible del sistema! ¿Deseas actualizar la aplicación ahora mismo para cargar los cambios técnicos?')) {
     showStatus('⚡ Actualizando archivos del sistema...');
-    // Si hay un worker esperando, mandamos la señal de saltar la espera
     if (clickRegistration && clickRegistration.waiting) {
       clickRegistration.waiting.postMessage({ action: 'skipWaiting' });
     } else {
