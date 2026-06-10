@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asistencia-cache-v1';
+const CACHE_NAME = 'ejidos-cache-v1';
 const ASSETS = [
   './',
   './index.html',

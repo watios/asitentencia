@@ -418,3 +418,87 @@ input[type="text"], input[type="date"], input[type="month"], select {
     text-transform: uppercase;
   }
 }
+/* Extensiones específicas para la PWA de Ejidos */
+.field-label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+input[type="number"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fafafa;
+}
+
+/* Tablas Dinámicas de Reportes */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.report-table th, .report-table td {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.report-table th {
+  background-color: #1976D2;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.report-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Reglas CSS para Impresión Oficial limpia (Esconde la UI innecesaria al imprimir) */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .app-header, #main-menu, .card:not(#cardResultadosReporte), .btn, #btnBackToMenu, input, select {
+    display: none !important;
+  }
+  .section-content {
+    padding: 0 !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+  .card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #cardResultadosReporte {
+    display: block !important;
+  }
+  .report-table th {
+    background-color: #1976D2 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
