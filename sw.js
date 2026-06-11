@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ejidos-cache-v1';
+const CACHE_NAME = 'asistencia-cache-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -39,11 +39,4 @@ self.addEventListener('fetch', (e) => {
       return cachedResponse || fetch(e.request);
     })
   );
-});
-
-// Receptor de mensajes del cliente para actualizaciones en caliente forzadas
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.action === 'skipWaiting') {
-    self.skipWaiting();
-  }
 });

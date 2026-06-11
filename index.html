@@ -3,286 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Control de Ejidos</title>
+  <title>Asistencia Diaria</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1976D2">
   <link rel="stylesheet" href="style.css">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231976D2'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E🏠%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231976D2'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E📋%3C/text%3E%3C/svg%3E">
 </head>
 <body>
   <div class="app-header">
     <button id="btnBackToMenu" class="btn-back-nav" aria-label="Volver al menú" style="visibility: hidden;">⬅️</button>
-    <h1 id="appTitle">🏠 Control de Ejidos</h1>
+    <h1 id="appTitle">📋 Asistencia Diaria</h1>
   </div>
 
   <div id="main-menu" class="menu-grid active">
-    <div class="menu-item" data-target="sec-hogares">
-      <div class="menu-icon">📝</div>
-      <div class="menu-label">Registro de Hogares</div>
-      <div class="menu-desc">Carga de hogares y cabezas de familia</div>
+    <div class="menu-item" data-target="sec-persons">
+      <div class="menu-icon">👥</div>
+      <div class="menu-label">Personas</div>
+      <div class="menu-desc">Agregar, editar y eliminar</div>
     </div>
-    <div class="menu-item" data-target="sec-localidades">
-      <div class="menu-icon">📍</div>
-      <div class="menu-label">Localidades</div>
-      <div class="menu-desc">Administrar San Pedro, Bichar, etc.</div>
+    <div class="menu-item" data-target="sec-config">
+      <div class="menu-icon">⚙️</div>
+      <div class="menu-label">Configuración</div>
+      <div class="menu-desc">Días de la semana laborables</div>
     </div>
-    <div class="menu-item" data-target="sec-sectores">
-      <div class="menu-icon">🗺️</div>
-      <div class="menu-label">Sectores</div>
-      <div class="menu-desc">Zonas dependientes de localidad</div>
+    <div class="menu-item" data-target="sec-attendance">
+      <div class="menu-icon">✅</div>
+      <div class="menu-label">Asistencia</div>
+      <div class="menu-desc">Pasar lista el día de hoy</div>
     </div>
-    <div class="menu-item" data-target="sec-reportes">
+    <div class="menu-item" data-target="sec-reports">
       <div class="menu-icon">📊</div>
       <div class="menu-label">Reportes</div>
-      <div class="menu-desc">Filtros, Costa y cargas con hijos</div>
+      <div class="menu-desc">Diario, mensual e inasistencias</div>
     </div>
-    <div class="menu-item" data-target="sec-datos">
-      <div class="menu-icon">💾</div>
-      <div class="menu-label">Gestión de Datos</div>
-      <div class="menu-desc">Importar, Exportar y Reseteo JSON</div>
+    <div class="menu-item" data-target="sec-stats">
+      <div class="menu-icon">📈</div>
+      <div class="menu-label">Estadísticas</div>
+      <div class="menu-desc">Métricas generales del mes</div>
     </div>
-    <div class="menu-item" id="menu-item-update" style="cursor: pointer;">
-      <div class="menu-icon">🔄</div>
-      <div class="menu-label">Actualizar App</div>
-      <div class="menu-desc">Buscar actualizaciones del sistema</div>
+    <div class="menu-item" data-target="sec-backups">
+      <div class="menu-icon">📂</div>
+      <div class="menu-label">Respaldos</div>
+      <div class="menu-desc">Exportar asistencias y personal</div>
     </div>
-  </div>
-
-  <div id="sec-hogares" class="section-content">
-    <div class="card">
-      <h3>➕ Registrar / Editar Hogar</h3>
-      <input type="hidden" id="hogarId">
-      
-      <label for="hogarLocalidad">Localidad (*):</label>
-      <select id="hogarLocalidad" class="form-select"><option value="">Seleccione...</option></select>
-      
-      <label for="hogarSector">Sector (*):</label>
-      <select id="hogarSector" class="form-select"><option value="">Seleccione una Localidad primero...</option></select>
-
-      <label for="hogarNombre">Nombre y Apellido de Cabeza de Hogar (*):</label>
-      <input type="text" id="hogarNombre" autocomplete="off" placeholder="Ej. Juan Pérez">
-
-      <label for="hogarCedula">Cédula de Identidad (*):</label>
-      <input type="text" id="hogarCedula" autocomplete="off" placeholder="Ej. V-12345678">
-
-      <label for="hogarNacionalidad">Nacionalidad (*):</label>
-      <select id="hogarNacionalidad" class="form-select">
-        <option value="Venezolano/a">Venezolano/a</option>
-        <option value="Extranjero/a">Extranjero/a</option>
-      </select>
-
-      <label for="hogarRif">RIF (Opcional):</label>
-      <input type="text" id="hogarRif" autocomplete="off" placeholder="Ej. J-12345678-0">
-
-      <label for="hogarCorreo">Correo Electrónico (Opcional):</label>
-      <input type="text" id="hogarCorreo" autocomplete="off" placeholder="ejemplo@correo.com">
-
-      <label for="hogarTelefono">Teléfono (*):</label>
-      <input type="text" id="hogarTelefono" autocomplete="off" placeholder="Ej. 04121234567">
-
-      <label for="hogarCasaNo">Número de Casa (Opcional):</label>
-      <input type="text" id="hogarCasaNo" autocomplete="off" placeholder="Ej. A-12">
-
-      <label for="hogarGps">Coordenadas GPS (Opcional):</label>
-      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <input type="text" id="hogarGps" autocomplete="off" placeholder='Ej. 10°44&apos;27.15"N 63°55&apos;48.21"O' style="margin: 0; flex: 1;">
-        <button type="button" id="btnCapturarGps" class="btn primary" style="margin: 0; padding: 0 12px; white-space: nowrap; font-size: 0.9rem;">🛰️ Capturar</button>
-      </div>
-
-      <label for="hogarOrganizacion">Organización / Institución (*):</label>
-      <select id="hogarOrganizacion" class="form-select">
-        <option value="Ninguna">Ninguna</option>
-        <option value="Misión Ribas">Misión Ribas</option>
-        <option value="Consejo Comunal">Consejo Comunal</option>
-        <option value="GNB">GNB</option>
-      </select>
-
-      <label for="hogarCostera">¿Pertenece a Zona Costera? (*):</label>
-      <select id="hogarCostera" class="form-select">
-        <option value="No">No</option>
-        <option value="Si">Si</option>
-      </select>
-
-      <label for="hogarHijos">Número de Hijos (*):</label>
-      <input type="number" id="hogarHijos" min="0" value="0">
-
-      <label for="hogarPareja">¿Tiene Pareja? (*):</label>
-      <select id="hogarPareja" class="form-select">
-        <option value="No">No</option>
-        <option value="Si">Si</option>
-      </select>
-
-      <label for="hogarAnosConst">Años de Residencia (*):</label>
-      <input type="number" id="hogarAnosConst" min="0" value="0">
-
-      <label>Fotografía de la Vivienda (Máx 70KB):</label>
-      <div style="margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap;">
-        <label for="hogarFotoInput" class="btn secondary" style="cursor: pointer; text-align: center; margin: 0;">📸 Capturar / Cargar Foto</label>
-        <input type="file" id="hogarFotoInput" accept="image/*" style="display: none;">
-        <button type="button" id="btnQuitarFoto" class="btn" style="background-color: #757575; color: white;">🗑️ Eliminar Foto</button>
-      </div>
-      <div id="hogarFotoStatus" style="font-size: 0.85rem; color: #666; font-style: italic; margin-bottom: 8px;">Sin foto cargada</div>
-      
-      <div id="hogarFotoPreviewContainer" style="display: none; margin-bottom: 15px; text-align: center;">
-        <img id="hogarFotoPreview" src="" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      </div>
-
-      <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button id="btnGuardarHogar" class="btn success">💾 Guardar Hogar</button>
-        <button id="btnCancelarHogarEdicion" class="btn secondary" style="display: none; background-color: #757575;">❌ Cancelar</button>
-      </div>
+    <div class="menu-item" data-target="sec-restore">
+      <div class="menu-icon">📥</div>
+      <div class="menu-label">Cargar Respaldo</div>
+      <div class="menu-desc">Restaurar datos desde un JSON</div>
     </div>
-
-    <div class="card">
-      <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-        <span style="font-size: 1.2rem;">🔍</span>
-        <input type="text" id="searchHogarInput" placeholder="Buscar por Nombre o Cédula..." autocomplete="off" style="margin: 0; padding: 10px;">
-      </div>
-      <div id="hogaresList"></div>
+    <div class="menu-item setup-pwa-btn" id="menuInstallBtn">
+      <div class="menu-icon">📲</div>
+      <div class="menu-label">Instalar App</div>
+      <div class="menu-desc">Manual de acceso directo</div>
     </div>
   </div>
 
-  <div id="sec-localidades" class="section-content">
+  <div id="sec-persons" class="section-content">
     <div class="card">
-      <h3>➕ Agregar Localidad</h3>
-      <input type="hidden" id="locId">
-      <label for="locNombre">Nombre de la Localidad (*):</label>
-      <input type="text" id="locNombre" placeholder="Ej. El Bichar" autocomplete="off">
-      
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <button id="btnGuardarLoc" class="btn success">💾 Guardar Localidad</button>
-        <button id="btnCancelarLocEdicion" class="btn secondary" style="display: none; background-color: #757575;">❌ Cancelar</button>
-      </div>
+      <h3>➕ Agregar nueva persona</h3>
+      <input type="text" id="personName" placeholder="Nombre completo" autocomplete="off">
+      <input type="text" id="personCedula" placeholder="Cédula de identidad (única)" autocomplete="off">
+      <label for="personSexo" class="field-label">Sexo:</label>
+      <select id="personSexo" class="form-select">
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <button id="addPersonBtn" class="btn success">Añadir persona</button>
     </div>
+
     <div class="card">
-      <h3>📋 Localidades en el Sistema</h3>
-      <div id="localidadesList"></div>
+      <h3>👥 Lista de personas</h3>
+      <input type="text" id="searchPersonInput" placeholder="🔍 Buscar por nombre o cédula..." autocomplete="off" style="margin-bottom: 15px;">
+      <div id="personList" class="person-list">Cargando...</div>
     </div>
   </div>
 
-  <div id="sec-sectores" class="section-content">
+  <div id="sec-config" class="section-content">
     <div class="card">
-      <h3>➕ Agregar Sector</h3>
-      <input type="hidden" id="secId">
-      
-      <label for="secLocalidadBelongs">Localidad de Adscripción (*):</label>
-      <select id="secLocalidadBelongs" class="form-select"></select>
-
-      <label for="secNombre">Nombre del Sector (*):</label>
-      <input type="text" id="secNombre" placeholder="Ej. Sector Centro" autocomplete="off">
-
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <button id="btnGuardarSec" class="btn success">💾 Guardar Sector</button>
-        <button id="btnCancelarSecEdicion" class="btn secondary" style="display: none; background-color: #757575;">❌ Cancelar</button>
+      <h3>⚙️ Días Laborables de la Semana</h3>
+      <p class="section-desc">Selecciona cuáles días de la semana se toman en cuenta para evaluar las inasistencias en los reportes mensuales:</p>
+      <div class="days-checkbox-grid">
+        <label class="chk-label"><input type="checkbox" id="workDay-1" value="1"> Lun</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-2" value="2"> Mar</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-3" value="3"> Mié</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-4" value="4"> Jue</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-5" value="5"> Vie</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-6" value="6"> Sáb</label>
+        <label class="chk-label"><input type="checkbox" id="workDay-0" value="0"> Dom</label>
       </div>
-    </div>
-    <div class="card">
-      <h3>📋 Sectores Registrados</h3>
-      <div id="sectoresList"></div>
+      <button id="saveSettingsBtn" class="btn primary" style="margin-top: 10px;">💾 Guardar Configuración Semanal</button>
+
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+      <h3>🚨 Zona de Peligro</h3>
+      <p class="section-desc">Borra permanentemente todas las personas, historiales de asistencia y configuraciones guardadas en el dispositivo:</p>
+      <button id="resetAllDataBtn" class="btn primary" style="background-color: #d32f2f; margin-top: 5px;">🗑️ Resetear Todos los Datos</button>
     </div>
   </div>
 
-  <div id="sec-reportes" class="section-content">
-    <div class="card no-print">
-      <h3>📊 Filtros y Consolidación de Reportes</h3>
-      
-      <label for="repLocalidad">Filtrar por Localidad:</label>
-      <select id="repLocalidad" class="form-select"></select>
+  <div id="sec-attendance" class="section-content">
+    <div class="card">
+      <h3 id="todayDate"></h3>
+      <p id="workDayWarning" class="warning-text" style="display: none;">⚠️ ¡Atención! Hoy está configurado como día NO LABORABLE.</p>
+      <div id="attendanceList" class="attendance-list">Cargando personas...</div>
+      <button id="saveAttendanceBtn" class="btn success">💾 Guardar asistencia de hoy</button>
+    </div>
+  </div>
 
-      <label for="repSector">Filtrar por Sector:</label>
-      <select id="repSector" class="form-select">
-        <option value="">-- Todos los Sectores --</option>
-      </select>
-
-      <label for="repCostera">Filtro de Zona Costera:</label>
-      <select id="repCostera" class="form-select">
-        <option value="TODOS">-- Todos --</option>
-        <option value="Si">Solo Zona Costera</option>
-        <option value="No">Excluir Zona Costera</option>
-      </select>
-
-      <label for="repCarga">Carga Familiar:</label>
-      <select id="repCarga" class="form-select">
-        <option value="TODOS">-- Todos --</option>
-        <option value="CON_HIJOS">Cabezas de Familia con Hijos</option>
-        <option value="SIN_HIJOS">Sin Hijos Registrados</option>
-      </select>
-
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px;">
-        <button id="btnFiltrarReporte" class="btn primary">🔍 Aplicar Filtros</button>
-        <button id="btnImprimirReporte" class="btn success" style="background-color: #009688;">🖨️ Imprimir Reporte Oficial</button>
+  <div id="sec-reports" class="section-content">
+    <div class="card">
+      <h3>📅 1. Consulta Diaria e Impresión</h3>
+      <input type="date" id="historyDate">
+      <div class="button-group">
+        <button id="loadHistoryBtn" class="btn primary">Ver asistencias</button>
+        <button id="generatePdfBtn" class="btn secondary">📄 Imprimir / PDF</button>
       </div>
+      <div id="historyResult" class="history-result"></div>
     </div>
 
-    <div class="card printable-report">
-      <div class="report-header-print">
-        <h2>REPORTE CONSOLIDADO DE HABITANTES Y EJIDOS</h2>
-        <p>Ámbito Geográfico Local - Estado Nueva Esparta</p>
-        <div id="printMetaDate" style="font-size:0.85rem; color:#555; margin-top:4px;"></div>
-      </div>
+    <div class="card">
+      <h3>📊 2. Reporte Mensual de Inasistencias</h3>
+      <p class="section-desc">Calcula asistencias e inasistencias totales cruzando los días laborables configurados.</p>
+      <input type="month" id="reportMonth">
+      <button id="loadMonthlyReportBtn" class="btn success" style="background-color: #673AB7;">Generar Reporte Mensual</button>
+      <div id="monthlyReportResult" style="margin-top: 15px;"></div>
+    </div>
+  </div>
 
-      <div class="metrics-grid">
-        <div class="metric-box">
-          <div class="num" id="statTotalHogares">0</div>
-          <div class="lab">Hogares Consolidados</div>
+  <div id="sec-stats" class="section-content">
+    <div class="card">
+      <h3>📈 Resumen Estadístico del Mes</h3>
+      <p class="section-desc">Selecciona un mes para calcular las métricas de rendimiento y porcentajes de asistencia global:</p>
+      <input type="month" id="statsMonth">
+      <button id="loadStatsBtn" class="btn primary" style="background-color: #009688;">Calcular Estadísticas</button>
+      
+      <div id="statsResult" style="margin-top: 20px; display: none;">
+        <div class="stats-box-grid">
+          <div class="stat-box">
+            <span class="stat-num" id="stat-total-persons">0</span>
+            <span class="stat-label">Personas Activas</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" id="stat-working-days">0</span>
+            <span class="stat-label">Días Laborables</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" id="stat-attendance-rate">0%</span>
+            <span class="stat-label">Tasa de Asistencia</span>
+          </div>
         </div>
-        <div class="metric-box">
-          <div class="num" id="statTotalHijos">0</div>
-          <div class="lab">Total Hijos en Ámbito</div>
+
+        <div style="margin-top:20px;">
+          <h4>🚨 Alerta: Más Inasistencias en el Mes</h4>
+          <div id="statsTopAbsences"></div>
         </div>
-        <div class="metric-box">
-          <div class="num" id="statTotalCostera">0</div>
-          <div class="lab">Familias en Costa</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sec-backups" class="section-content">
+    <div class="card">
+      <h3>📅 1. Copia de Seguridad de Asistencias Mensuales</h3>
+      <p class="section-desc">Descarga los registros de control de un mes concreto:</p>
+      <input type="month" id="backupMonthPicker">
+      <button id="btnBackupMonth" class="btn primary" style="background-color: #E65100;">💾 Guardar Asistencia Mensual</button>
+    </div>
+
+    <div class="card">
+      <h3>👥 2. Copia de Personal Registrado</h3>
+      <p class="section-desc">Descarga la lista de todas las personas ingresadas en el sistema (Cédulas, nombres y sexos):</p>
+      <button id="btnBackupPersons" class="btn success" style="background-color: #2E7D32;">💾 Descargar Lista de Personal</button>
+    </div>
+
+    <div class="card">
+      <h3>📦 3. Copia Completa de la Base de Datos</h3>
+      <p class="section-desc">Descarga un archivo global con todo el personal, configuraciones e historial de asistencia acumulado:</p>
+      <button id="btnBackupAll" class="btn primary" style="background-color: #311B92;">💾 Descargar Respaldo Total</button>
+    </div>
+  </div>
+
+  <div id="sec-restore" class="section-content">
+    <div class="card">
+      <h3>📥 Seleccionar Archivo de Respaldo (.json)</h3>
+      <p class="section-desc">Sube cualquier archivo JSON generado por esta app para incorporar las personas o el historial acumulado de asistencias de vuelta a tu base de datos local:</p>
+      
+      <div class="file-upload-wrapper">
+        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+        <button id="btnTriggerFileInput" class="btn secondary" style="background-color: #ECEFF1; border: 2px dashed #B0BEC5; color: #37474F; margin-bottom: 15px;">🔍 Buscar Archivo en mi Dispositivo</button>
+        <div id="selectedFileInfo" style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px; font-weight: bold;">Ningún archivo seleccionado</div>
+      </div>
+      
+      <button id="btnProcessImport" class="btn success" style="background-color: #00897B; display: none;">⚡ Procesar e Importar Datos</button>
+    </div>
+  </div>
+
+  <div id="pwaHelpModal" class="modal-overlay">
+    <div class="modal-content installation-guide">
+      <h3>📲 Instalar en tu Dispositivo</h3>
+      <p class="guide-intro">Para tener esta aplicación en tu pantalla de inicio como una app nativa:</p>
+      
+      <div class="guide-tabs">
+        <div class="guide-tab-box android-guide">
+          <h4>🤖 En Android (Chrome)</h4>
+          <ol>
+            <li>Toca el botón de los <strong>tres puntos (⋮)</strong> en la esquina superior derecha del navegador.</li>
+            <li>Selecciona la opción <strong>"Añadir a la pantalla de inicio"</strong> o <strong>"Instalar aplicación"</strong>.</li>
+            <li>Confirma la acción para crear tu acceso directo en el escritorio.</li>
+          </ol>
+        </div>
+        
+        <div class="guide-tab-box ios-guide">
+          <h4>🍏 En iPhone / iOS (Safari)</h4>
+          <ol>
+            <li>Presiona el botón de <strong>Compartir</strong> (el icono del cuadrado con una flecha hacia arriba) en la barra inferior.</li>
+            <li>Desliza el menú hacia abajo y pulsa sobre <strong>"Añadir a la pantalla de inicio"</strong>.</li>
+            <li>Toca <strong>"Añadir"</strong> arriba a la derecha.</li>
+          </ol>
         </div>
       </div>
 
-      <div style="overflow-x: auto;">
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Cédula</th>
-              <th>Cabeza de Familia</th>
-              <th>Localidad / Sector</th>
-              <th>Teléfono</th>
-              <th>Hijos</th>
-              <th>Costa</th>
-              <th>Organización</th>
-            </tr>
-          </thead>
-          <tbody id="reportTableBody">
-            <tr>
-              <td colspan="7" style="text-align:center; color:#999; padding: 20px;">Utiliza los filtros superiores para renderizar la sábana de datos.</td>
-            </tr>
-          </tbody>
-        </table>
+      <button id="closePwaHelpBtn" class="btn secondary" style="margin-top: 15px; margin-bottom: 0;">Entendido</button>
+    </div>
+  </div>
+
+  <div id="editPersonModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Editar Datos de Persona</h3>
+      <input type="hidden" id="editPersonId">
+      <label for="editPersonName">Nombre completo:</label>
+      <input type="text" id="editPersonName" autocomplete="off">
+      <label for="editPersonCedula">Cédula de identidad:</label>
+      <input type="text" id="editPersonCedula" autocomplete="off">
+      <label for="editPersonSexo">Sexo:</label>
+      <select id="editPersonSexo" class="form-select">
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <div class="button-group" style="margin-top: 15px;">
+        <button id="cancelEditBtn" class="btn secondary" style="margin-bottom: 0;">Cancelar</button>
+        <button id="saveEditBtn" class="btn primary" style="margin-bottom: 0; background-color: #4CAF50;">Guardar</button>
       </div>
     </div>
   </div>
 
-  <div id="sec-datos" class="section-content">
-    <div class="card">
-      <h3>📥 Respaldar / Exportar Datos (.JSON)</h3>
-      <p class="section-desc">Genera una copia en tiempo real de todos tus datos locales de Dexie.js para guardarla en tu computadora o pendrive.</p>
-      <button id="btnExportarTodo" class="btn primary">💾 Descargar Respaldo Estructurado</button>
-    </div>
-
-    <div class="card">
-      <h3>📤 Cargar / Importar Repositorio (.JSON)</h3>
-      <p class="section-desc">Selecciona un archivo compatible previamente generado por esta aplicación.</p>
-      <button id="btnClickFile" class="btn secondary">📄 Seleccionar Archivo JSON</button>
-      <input type="file" id="fileInputImport" accept=".json" style="display:none;">
-      <div id="fileInfoLabel" style="margin: 10px 0; font-size:0.9rem; font-weight:600; text-align:center; color:#333;">Ningún archivo seleccionado</div>
-      <button id="btnProcesarImportacion" class="btn success" style="display:none; background-color:#673AB7;">⚡ Consolidar e Importar Datos</button>
-    </div>
-
-    <div class="card" style="border: 1px solid #ffc107;">
-      <h3 style="color:#d32f2f;">🚨 Depuración y Zona Crítica</h3>
-      <p class="section-desc">Esta acción eliminará de forma irreversible toda la data almacenada de hogares, las localidades personalizadas y sus sectores mapeados.</p>
-      <button id="btnResetearTodo" class="btn" style="background-color:#d32f2f; color:white;">🗑️ Resetear Todos los Datos</button>
-    </div>
-  </div>
-
-  <div id="toastStatus" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:12px 24px; border-radius:30px; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:2000; font-size:0.95rem; font-weight:500; text-align:center; min-width:250px;"></div>
+  <div id="statusMsg" class="status"></div>
+  <div id="printArea" class="print-only"></div>
 
   <script src="dexie.min.js"></script>
   <script src="app.js"></script>
